@@ -17,10 +17,15 @@ class Auth:
     def get_password_hash(self, password: str):
         return self.pwd_context.hash(password)
 
-    def verify_password(self, password: str, hashed_password: str):
-        return self.pwd_context.verify(password, hashed_password)
+    async def verify_password(self, password: str, hashed_password: str):
+        is_valid = self.pwd_context.verify(password, hashed_password)
+        if not is_valid:
+            raise HTTPException(
+                status_code=status.HTTP_401_UNAUTHORIZED, detail="Invalid data."
+            )
+        return is_valid
 
-    def create_access_token(self, data: dict, expires_delta: Optional[float] = None):
+    async def create_access_token(self, data: dict, expires_delta: Optional[float] = None):
         copied = data.copy()
         if expires_delta:
             expiration = datetime.now() + timedelta(seconds=expires_delta)
@@ -32,7 +37,7 @@ class Auth:
 
         return encoded_access_token
 
-    def create_refresh_token(self, data: dict, expires_delta: Optional[float] = None):
+    async def create_refresh_token(self, data: dict, expires_delta: Optional[float] = None):
         copied = data.copy()
         if expires_delta:
             expiration = datetime.now() + timedelta(seconds=expires_delta)
@@ -44,14 +49,15 @@ class Auth:
 
         return encoded_refresh_token
 
-    def create_email_token(self, data: dict):
+
+    async def create_email_token(self, data: dict):
         to_encode = data.copy()
         expire = datetime.utcnow() + timedelta(days=1)
         to_encode.update({"iat": datetime.utcnow(), "exp": expire})
         token = jwt.encode(to_encode, self.SECRET_KEY, algorithm=self.ALGORITHM)
         return token
 
-    def get_email_from_token(self, token: str):
+    async def get_email_from_token(self, token: str):
         try:
             payload = jwt.decode(token, self.SECRET_KEY, algorithms=self.ALGORITHM)
             email = payload["sub"]

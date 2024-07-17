@@ -1,16 +1,22 @@
+import pickle
+
+import redis
 from fastapi import APIRouter, status, Depends, Request, BackgroundTasks, HTTPException
-from fastapi.security import HTTPBearer
+from fastapi.security import HTTPBearer, OAuth2PasswordRequestForm
 from fastapi_limiter.depends import RateLimiter
 from sqlalchemy.ext.asyncio import AsyncSession
 
+from src.config.config import config
 from src.schemas.user import UserSchema, UserResponseSchema, TokenSchema
 from src.database.db import get_database
-from src.repository.users import get_user_by_email, create_user, confirm_email
+from src.repository.users import get_user_by_email, create_user, confirm_email, set_refresh_token
 from src.services.auth import auth_service
 from src.services.email import send_email
+from src.services.login_handler import LoginHandler
 
 router = APIRouter(prefix="/auth", tags=["auth"])
 get_refresh_token = HTTPBearer()
+cache = redis.Redis(host=config.REDIS_DOMAIN, port=config.REDIS_PORT, db=0)
 
 
 @router.post(
@@ -43,27 +49,24 @@ async def signup(
     dependencies=[Depends(RateLimiter(times=1, seconds=5))]
 )
 async def login(
-    body: UserSchema,
+    body: OAuth2PasswordRequestForm = Depends(),
     db: AsyncSession = Depends(get_database),
 ):
-    user = await get_user_by_email(body.email, db)
-    if not user:
-        raise HTTPException(
-            status_code=status.HTTP_401_UNAUTHORIZED, detail="User not registered."
-        )
-    if not user.confirmed:
-        raise HTTPException(
-            status_code=status.HTTP_401_UNAUTHORIZED, detail="Email not confirmed."
-        )
-    if not auth_service.verify_password(body.password, user.password):
-        raise HTTPException(
-            status_code=status.HTTP_401_UNAUTHORIZED, detail="Invalid data."
-        )
+    login_handler = LoginHandler(db, cache, auth_service)
 
-    access_token = auth_service.create_access_token(data={"sub": user.email})
-    refresh_token = auth_service.create_refresh_token(data={"sub": user.email})
+    user_hash = str(body.username)
+    user_data_bytes = cache.get(user_hash)
+    if user_data_bytes is None:
+        user = await login_handler.get_user(body.username)
+        await login_handler.is_confirmed(user)
+        await auth_service.verify_password(body.password, user.password)
+        user_data = await login_handler.create_tokens(user)
+        await login_handler.handle_cache(user_hash, user_data)
+        print("directly")
+        return user_data
 
-    return {"access_token": access_token, "refresh_token": refresh_token}
+    print("cache")
+    return pickle.loads(user_data_bytes)
 
 
 @router.get('/confirmed_email/{token}', status_code=status.HTTP_200_OK)

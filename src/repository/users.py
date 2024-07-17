@@ -27,3 +27,8 @@ async def confirm_email(user: User, db: AsyncSession = Depends(get_database)):
     user.confirmed = True
     await db.commit()
 
+
+async def set_refresh_token(user: User, token: str, db: AsyncSession = Depends(get_database)):
+    user.refresh_token = token
+    await db.commit()
+
