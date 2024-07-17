@@ -17,6 +17,9 @@ class Auth:
     def get_password_hash(self, password: str):
         return self.pwd_context.hash(password)
 
+    def verify_password(self, password: str, hashed_password: str):
+        return self.pwd_context.verify(password, hashed_password)
+
     def create_access_token(self, data: dict, expires_delta: Optional[float] = None):
         copied = data.copy()
         if expires_delta:
