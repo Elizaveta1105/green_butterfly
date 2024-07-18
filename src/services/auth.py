@@ -1,15 +1,22 @@
 from datetime import datetime, timedelta
 from typing import Optional
 
-from fastapi import HTTPException, status
+from fastapi import HTTPException, status, Depends
+from fastapi.security import OAuth2PasswordBearer
 from jose import JWTError, jwt  # noqa
+from sqlalchemy.ext.asyncio import AsyncSession
+
 from src.config.config import config
 
 from passlib.context import CryptContext
 
+from src.database.db import get_database
+from src.repository.users import get_user_by_email
+
 
 class Auth:
     pwd_context = CryptContext(schemes=['bcrypt'], deprecated='auto')
+    oauth2_scheme = OAuth2PasswordBearer(tokenUrl="api/auth/login")
 
     SECRET_KEY = config.SECRET_KEY_JWT
     ALGORITHM = config.ALGORITHM
@@ -49,7 +56,6 @@ class Auth:
 
         return encoded_refresh_token
 
-
     async def create_email_token(self, data: dict):
         to_encode = data.copy()
         expire = datetime.utcnow() + timedelta(days=1)
@@ -68,6 +74,29 @@ class Auth:
                 status_code=status.HTTP_422_UNPROCESSABLE_ENTITY,
                 detail="Invalid token for email verification",
             )
+
+    async def get_current_user(self, token: str = Depends(oauth2_scheme), db: AsyncSession = Depends(get_database)):
+        credentials_exception = HTTPException(
+            status_code=status.HTTP_401_UNAUTHORIZED,
+            detail="Could not validate credentials",
+            headers={"WWW-Authenticate": "Bearer"},
+        )
+
+        try:
+            payload = jwt.decode(token, self.SECRET_KEY, algorithms=self.ALGORITHM)
+            if payload['scope'] == 'access_token':
+                email = payload["sub"]
+                if email is None:
+                    raise credentials_exception
+            else:
+                raise credentials_exception
+        except JWTError:
+            raise credentials_exception
+
+        user = await get_user_by_email(email, db)
+        if user is None:
+            raise credentials_exception
+        return user
 
 
 auth_service = Auth()

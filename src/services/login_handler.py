@@ -9,7 +9,7 @@ from src.repository.users import get_user_by_email, set_refresh_token
 from src.services.auth import Auth
 
 
-class LoginHandler:
+class LoginHandler(Auth):
     def __init__(self, db: AsyncSession, cache: redis.Redis, auth_service: Auth):
         self.db = db
         self.cache = cache
