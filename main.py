@@ -1,6 +1,6 @@
 import redis.asyncio as redis
 from fastapi import FastAPI
-from src.routes import auth, section
+from src.routes import auth, section, spending
 from fastapi_limiter import FastAPILimiter
 from src.config.config import config
 
@@ -8,6 +8,7 @@ app = FastAPI()
 
 app.include_router(auth.router, prefix='/api')
 app.include_router(section.router, prefix='/api')
+app.include_router(spending.router, prefix='/api')
 
 
 @app.on_event("startup")

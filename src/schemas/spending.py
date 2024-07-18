@@ -3,14 +3,15 @@ from typing import Optional
 from pydantic import BaseModel
 
 
-class SectionSchema(BaseModel):
+class SpendingSchema(BaseModel):
+    section_id: int
     name: str
     description: Optional[str] = None
-    sum: Optional[float] = 0
+    sum: float
     sum_currency: Optional[float] = 0
 
 
-class SectionResponseSchema(SectionSchema):
+class SpendingResponseSchema(SpendingSchema):
     id: int = 1
 
     class Config:

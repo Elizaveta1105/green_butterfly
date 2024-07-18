@@ -1,5 +1,6 @@
 from datetime import date
 import enum
+from typing import List
 
 from sqlalchemy import String, DateTime, func, Enum, Boolean, Column, Integer, ForeignKey, Float
 from sqlalchemy.orm import declarative_base, mapped_column, Mapped, relationship
@@ -32,8 +33,23 @@ class Section(Base):
 
     name: Mapped[str] = mapped_column(String(255), unique=True, nullable=False)
     description: Mapped[str] = mapped_column(String(255), unique=False, nullable=True)
-    sum: Mapped[float] = mapped_column(Float())
-    sum_currency: Mapped[float] = mapped_column(Float())
+    sum: Mapped[float] = mapped_column(Float(), nullable=True)
+    sum_currency: Mapped[float] = mapped_column(Float(), nullable=True)
     user_id = Column(Integer, ForeignKey("users.id"))
     user: Mapped["User"] = relationship("User", backref="section", lazy="joined")
+    spendings: Mapped["List[Spendings]"] = relationship("Spendings", back_populates="section", lazy="joined")
+
+
+class Spendings(Base):
+    __tablename__ = "spendings"
+    id: Mapped[int] = mapped_column(primary_key=True)
+
+    name: Mapped[str] = mapped_column(String(255), unique=True, nullable=False)
+    description: Mapped[str] = mapped_column(String(255), unique=False, nullable=True)
+    sum: Mapped[float] = mapped_column(Float(), nullable=False)
+    sum_currency: Mapped[float] = mapped_column(Float(), nullable=True)
+    section_id = Column(Integer, ForeignKey("section.id"))
+    section: Mapped["Section"] = relationship("Section", back_populates="spendings", lazy="joined")
+    created_at: Mapped[date] = mapped_column("created_at", DateTime, default=func.now())
+    updated_at: Mapped[date] = mapped_column("updated_at", DateTime, default=func.now(), onupdate=func.now())
 
