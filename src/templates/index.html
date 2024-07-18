@@ -1,0 +1,77 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>GreenButterfly - Manage Your Finances</title>
+    <link rel="stylesheet" href="{{ url_for('static', path='/css/styles.css') }}">
+    <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;700&display=swap" rel="stylesheet">
+</head>
+<body>
+    <header>
+        <div class="container">
+            <h1>GreenButterfly</h1>
+            <nav>
+                <ul>
+                    <li><a href="#features">Features</a></li>
+                    <li><a href="#about">About</a></li>
+                    <li><a href="/login">Login</a></li>
+                    <li><a href="/register" class="btn">Register</a></li>
+                </ul>
+            </nav>
+        </div>
+    </header>
+    <main>
+        <section id="hero">
+            <div class="container">
+                <div class="hero-content">
+                    <h2>Take Control of Your Finances with GreenButterfly</h2>
+                    <p>Your personal finance manager to track and optimize your spendings.</p>
+                    <a href="/register" class="btn">Get Started</a>
+                </div>
+                <img src="{{ url_for('static', path='/images/hero-image.png') }}" alt="Finance Management">
+            </div>
+        </section>
+        <section id="features">
+            <div class="container">
+                <h2>Features</h2>
+                <div class="features-grid">
+                    <div class="feature">
+                        <img src="{{ url_for('static', path='/images/feature1.png') }}" alt="Track Spendings">
+                        <h3>Track Spendings</h3>
+                        <p>Easily categorize and track your daily expenses.</p>
+                    </div>
+                    <div class="feature">
+                        <img src="{{ url_for('static', path='/images/feature2.png') }}" alt="Generate Reports">
+                        <h3>Generate Reports</h3>
+                        <p>Generate detailed reports to analyze your spending habits.</p>
+                    </div>
+                    <div class="feature">
+                        <img src="{{ url_for('static', path='/images/feature3.png') }}" alt="Set Budgets">
+                        <h3>Set Budgets</h3>
+                        <p>Set monthly budgets and stay within your financial goals.</p>
+                    </div>
+                </div>
+            </div>
+        </section>
+        <section id="about">
+            <div class="container">
+                <h2>About GreenButterfly</h2>
+                <p>GreenButterfly is a comprehensive financial management tool designed to help you take control of your finances. Our mission is to provide you with the tools you need to manage your money effectively and achieve financial freedom.</p>
+            </div>
+        </section>
+        <section id="cta">
+            <div class="container">
+                <h2>Join GreenButterfly Today</h2>
+                <p>Sign up now and start managing your finances like a pro.</p>
+                <a href="/register" class="btn">Register Now</a>
+            </div>
+        </section>
+    </main>
+    <footer>
+        <div class="container">
+            <p>&copy; 2024 GreenButterfly. All rights reserved.</p>
+        </div>
+    </footer>
+</body>
+</html>

@@ -1,14 +1,24 @@
 import redis.asyncio as redis
-from fastapi import FastAPI
+from fastapi import FastAPI, Request
+from starlette.responses import HTMLResponse
+
 from src.routes import auth, section, spending
 from fastapi_limiter import FastAPILimiter
 from src.config.config import config
+from fastapi.staticfiles import StaticFiles
+from fastapi.templating import Jinja2Templates
+from starlette.middleware.sessions import SessionMiddleware
+import secrets
 
 app = FastAPI()
 
 app.include_router(auth.router, prefix='/api')
 app.include_router(section.router, prefix='/api')
 app.include_router(spending.router, prefix='/api')
+
+app.mount("/static", StaticFiles(directory="src/static"), name="static")
+templates = Jinja2Templates(directory="src/templates")
+app.add_middleware(SessionMiddleware, secret_key=secrets.token_hex(16))
 
 
 @app.on_event("startup")
@@ -18,6 +28,6 @@ async def startup():
     await FastAPILimiter.init(r)
 
 
-@app.get("/")
-def read_root():
-    return {"Hello": "World"}
+@app.get("/", response_class=HTMLResponse)
+def read_root(request: Request):
+    return templates.TemplateResponse("index.html", {"request": request})
