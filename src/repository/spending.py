@@ -14,9 +14,15 @@ from src.repository.section import get_section_by_id
 async def add_spending(body: SpendingSchema, db: AsyncSession = Depends(get_database)):
     try:
         section = await get_section_by_id(body.section_id, db)
+        print("SECTION", section)
         spending = Spendings(**body.dict())
+
         if spending.sum:
-            currency_sum = await currency.get_currency_usd(datetime.now().date().strftime("%d.%m.%Y"))
+            date_value = spending.date if body.date else datetime.now().date()
+            currency_val = spending.currency if body.currency else "USD"
+            spending.date = date_value
+
+            currency_sum = await currency.get_currency_rate(date_value.strftime("%d.%m.%Y"), currency_val)
             spending.sum_currency = round(spending.sum / currency_sum, 2)
             section.sum += spending.sum
             section.sum_currency += spending.sum_currency
@@ -24,9 +30,9 @@ async def add_spending(body: SpendingSchema, db: AsyncSession = Depends(get_data
         await db.commit()
         await db.refresh(spending)
         return spending
-    except ValueError as e:
+    except (ValueError, TypeError) as e:
         await db.rollback()
-        raise ValueError(e)
+        raise
 
 
 async def get_spending_by_id(idx: int, db: AsyncSession = Depends(get_database)):
