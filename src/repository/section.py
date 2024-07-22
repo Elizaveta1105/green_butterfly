@@ -1,7 +1,6 @@
-from typing import Any, Sequence
-
 from fastapi import Depends
-from sqlalchemy import select, Row, RowMapping
+from sqlalchemy import select
+from sqlalchemy.exc import IntegrityError
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from src.database.db import get_database
@@ -17,7 +16,13 @@ async def add_section(body: SectionSchema, db: AsyncSession = Depends(get_databa
         await db.commit()
         await db.refresh(section)
         return section
-    except ValueError as e:
+    except IntegrityError as e:
+        await db.rollback()
+        if 'duplicate key value violates unique constraint' in str(e):
+            raise ValueError("A section with this name already exists.")
+        else:
+            raise ValueError(e)
+    except (ValueError, TypeError) as e:
         await db.rollback()
         raise ValueError(e)
 
@@ -31,6 +36,8 @@ async def get_section_by_id(section_id: int, db: AsyncSession) -> Section:
 async def get_sections(db: AsyncSession, user: User):
     result = await db.execute(select(Section).filter_by(user=user))
     sections = result.scalars().all()
+    if sections is None:
+        return []
     return sections
 
 
