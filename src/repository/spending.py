@@ -14,7 +14,8 @@ from src.repository.section import get_section_by_id
 async def add_spending(body: SpendingSchema, db: AsyncSession = Depends(get_database)):
     try:
         section = await get_section_by_id(body.section_id, db)
-        print("SECTION", section)
+        if not section:
+            raise ValueError("Section not found")
         spending = Spendings(**body.dict())
 
         if spending.sum:
