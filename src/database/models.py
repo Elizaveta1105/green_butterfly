@@ -2,7 +2,7 @@ from datetime import date
 import enum
 from typing import List
 
-from sqlalchemy import String, DateTime, func, Enum, Boolean, Column, Integer, ForeignKey, Float, Date
+from sqlalchemy import String, DateTime, func, Enum, Boolean, Column, Integer, ForeignKey, Float, Date, Text
 from sqlalchemy.orm import declarative_base, mapped_column, Mapped, relationship
 
 Base = declarative_base()
@@ -54,3 +54,14 @@ class Spendings(Base):
     created_at: Mapped[date] = mapped_column("created_at", DateTime, default=func.now())
     updated_at: Mapped[date] = mapped_column("updated_at", DateTime, default=func.now(), onupdate=func.now())
 
+
+class Images(Base):
+    __tablename__ = "images"
+    id: Mapped[int] = mapped_column(primary_key=True)
+    title: Mapped[str] = mapped_column(String(255))
+    description: Mapped[str] = mapped_column(String(255))
+    images_url: Mapped[str] = mapped_column(String(255))
+    qr_code_url: Mapped[str] = mapped_column(Text, nullable=True)
+    created_at: Mapped[date] = mapped_column("created_at", DateTime, default=func.now(), nullable=True)
+    section_id = Column(Integer, ForeignKey("section.id"))
+    section: Mapped["Section"] = relationship("Section", backref="section", lazy="joined")

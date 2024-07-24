@@ -2,7 +2,7 @@ import redis.asyncio as redis
 from fastapi import FastAPI, Request
 from starlette.responses import HTMLResponse
 
-from src.routes import auth, section, spending
+from src.routes import auth, section, spending, images
 from fastapi_limiter import FastAPILimiter
 from src.config.config import config
 from fastapi.staticfiles import StaticFiles
@@ -15,6 +15,7 @@ app = FastAPI()
 app.include_router(auth.router, prefix='/api')
 app.include_router(section.router, prefix='/api')
 app.include_router(spending.router, prefix='/api')
+app.include_router(images.router, prefix='/api')
 
 app.mount("/static", StaticFiles(directory="src/static"), name="static")
 templates = Jinja2Templates(directory="src/templates")
