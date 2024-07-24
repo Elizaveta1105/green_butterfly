@@ -30,6 +30,8 @@ async def add_section(body: SectionSchema, db: AsyncSession = Depends(get_databa
 async def get_section_by_id(section_id: int, db: AsyncSession) -> Section:
     result = await db.execute(select(Section).where(Section.id == section_id))
     section = result.scalar_one_or_none()
+    if section is None:
+        raise ValueError("Section not found")
     return section
 
 
@@ -37,7 +39,20 @@ async def get_sections(db: AsyncSession, user: User):
     result = await db.execute(select(Section).filter_by(user=user))
     sections = result.scalars().all()
     if sections is None:
-        return []
+        raise ValueError("Section not found")
     return sections
 
+
+async def edit_section_body(body: SectionSchema, section_id: int, db: AsyncSession, user: User):
+    stmt = select(Section).filter_by(id=section_id, user=user)
+    result = await db.execute(stmt)
+    section = result.scalar_one_or_none()
+    if section is None:
+        raise ValueError("Section not found")
+    for key, value in body.dict().items():
+        if value:
+            setattr(section, key, value)
+    await db.commit()
+    await db.refresh(section)
+    return section
 
