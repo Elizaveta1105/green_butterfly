@@ -6,7 +6,7 @@ from sqlalchemy.ext.asyncio import AsyncSession
 
 from src.database.db import get_database
 from src.database.models import Spendings, Section
-from src.schemas.spending import SpendingSchema
+from src.schemas.spending import SpendingSchema, SpendingUpdateSchema
 from src.services.currency import currency
 from src.repository.section import get_section_by_id
 
@@ -51,6 +51,25 @@ async def get_spending_by_section(idx: int, db: AsyncSession = Depends(get_datab
         stmt = select(Spendings).where(Spendings.section_id == idx)
         result = await db.execute(stmt)
         spendings = result.scalars().all()
+        if not spendings:
+            return []
         return spendings
+    except ValueError as e:
+        raise ValueError(e)
+
+
+async def edit_spending_by_id(body: SpendingUpdateSchema, idx: int, db: AsyncSession = Depends(get_database)):
+    try:
+        stmt = select(Spendings).filter_by(id=idx)
+        result = await db.execute(stmt)
+        spending = result.scalar_one_or_none()
+        if not spending:
+            raise ValueError("Spending not found")
+        for key, value in body.dict().items():
+            if value:
+                setattr(spending, key, value)
+        await db.commit()
+        await db.refresh(spending)
+        return spending
     except ValueError as e:
         raise ValueError(e)
