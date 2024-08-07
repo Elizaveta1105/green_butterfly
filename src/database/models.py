@@ -25,6 +25,7 @@ class User(Base):
     updated_at: Mapped[date] = mapped_column("updated_at", DateTime, default=func.now(), onupdate=func.now())
     role: Mapped[Enum] = mapped_column("role", Enum(Role), default=Role.admin, nullable=True)
     confirmed: Mapped[bool] = mapped_column(Boolean, default=False, nullable=True)
+    sections: Mapped[List["Section"]] = relationship("Section", back_populates="user", cascade="all, delete")
 
 
 class Section(Base):
@@ -35,9 +36,11 @@ class Section(Base):
     description: Mapped[str] = mapped_column(String(255), unique=False, nullable=True)
     sum: Mapped[float] = mapped_column(Float(), nullable=True)
     sum_currency: Mapped[float] = mapped_column(Float(), nullable=True)
-    user_id = Column(Integer, ForeignKey("users.id"))
-    user: Mapped["User"] = relationship("User", backref="section", lazy="joined")
-    spendings = relationship('Spendings', backref='section')
+    user_id: Mapped[int] = mapped_column(ForeignKey("users.id", ondelete="CASCADE"))
+    user: Mapped["User"] = relationship("User", back_populates="sections")
+    spendings: Mapped[List["Spendings"]] = relationship("Spendings", back_populates="section", cascade="all, "
+                                                                                                       "delete", passive_deletes=True)
+    images: Mapped[List["Images"]] = relationship("Images", back_populates="section", cascade="all, delete", passive_deletes=True)
 
 
 class Spendings(Base):
@@ -50,7 +53,8 @@ class Spendings(Base):
     currency: Mapped[str] = mapped_column(String(100), nullable=True)
     sum: Mapped[float] = mapped_column(Float(), nullable=False)
     sum_currency: Mapped[float] = mapped_column(Float(), nullable=True)
-    section_id = Column(Integer, ForeignKey("section.id"))
+    section_id: Mapped[int] = mapped_column(ForeignKey("section.id", ondelete="CASCADE"))
+    section: Mapped["Section"] = relationship("Section", back_populates="spendings")
     created_at: Mapped[date] = mapped_column("created_at", DateTime, default=func.now())
     updated_at: Mapped[date] = mapped_column("updated_at", DateTime, default=func.now(), onupdate=func.now())
 
@@ -63,5 +67,5 @@ class Images(Base):
     images_url: Mapped[str] = mapped_column(String(255))
     qr_code_url: Mapped[str] = mapped_column(Text, nullable=True)
     created_at: Mapped[date] = mapped_column("created_at", DateTime, default=func.now(), nullable=True)
-    section_id = Column(Integer, ForeignKey("section.id"))
-    section: Mapped["Section"] = relationship("Section", backref="section", lazy="joined")
+    section_id: Mapped[int] = mapped_column(ForeignKey("section.id", ondelete="CASCADE"))
+    section: Mapped["Section"] = relationship("Section", back_populates="images")

@@ -1,4 +1,5 @@
 from fastapi import Depends
+from fastapi.exceptions import ResponseValidationError
 from sqlalchemy import select
 from sqlalchemy.exc import IntegrityError
 from sqlalchemy.ext.asyncio import AsyncSession
@@ -56,3 +57,17 @@ async def edit_section_body(body: SectionSchema, section_id: int, db: AsyncSessi
     await db.refresh(section)
     return section
 
+
+async def remove_section(section_id: int, db: AsyncSession, user: User):
+    try:
+        stmt = select(Section).filter_by(id=section_id, user_id=user.id)
+        result = await db.execute(stmt)
+        section = result.scalar_one_or_none()
+        if section:
+            await db.delete(section)
+            await db.commit()
+            return section
+        return None
+    except ValueError as e:
+        await db.rollback()
+        raise ValueError(e)

@@ -1,6 +1,7 @@
 from datetime import date, datetime
 
 from fastapi import Depends
+from fastapi.exceptions import ResponseValidationError
 from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
 
@@ -42,7 +43,7 @@ async def get_spending_by_id(idx: int, db: AsyncSession = Depends(get_database))
         result = await db.execute(stmt)
         spending = result.scalar_one_or_none()
         return spending
-    except ValueError as e:
+    except (ValueError, ResponseValidationError) as e:
         raise ValueError(e)
 
 

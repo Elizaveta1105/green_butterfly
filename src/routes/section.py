@@ -8,7 +8,7 @@ from src.database.db import get_database
 from src.database.models import User
 from src.schemas.section import SectionResponseSchema, SectionSchema
 from src.services.auth import auth_service
-from src.repository.section import add_section, get_sections, edit_section_body, get_section_by_id
+from src.repository.section import add_section, get_sections, edit_section_body, get_section_by_id, remove_section
 
 router = APIRouter(prefix='/section', tags=['section'])
 
@@ -31,7 +31,7 @@ async def get_all_sections(db: AsyncSession = Depends(get_database), user: User 
         raise HTTPException(status_code=400, detail=str(e))
 
 
-@router.get("/{section_id}", response_model=SectionResponseSchema, status_code=status.HTTP_201_CREATED)
+@router.get("/{section_id}", response_model=SectionResponseSchema, status_code=status.HTTP_200_OK)
 async def get_section_by_idx(section_id: int = Path(ge=1), db: AsyncSession = Depends(get_database), user: User = Depends(auth_service.get_current_user)):
     try:
         section = await get_section_by_id(section_id, db)
@@ -40,10 +40,19 @@ async def get_section_by_idx(section_id: int = Path(ge=1), db: AsyncSession = De
         raise HTTPException(status_code=400, detail=str(e))
 
 
-@router.put("/{section_id}", response_model=SectionResponseSchema, status_code=status.HTTP_201_CREATED)
+@router.put("/{section_id}", response_model=SectionResponseSchema, status_code=status.HTTP_200_OK)
 async def edit_section(body: SectionSchema, section_id: int = Path(ge=1), db: AsyncSession = Depends(get_database), user: User = Depends(auth_service.get_current_user)):
     try:
         section = await edit_section_body(body, section_id, db, user)
+        return section
+    except ValueError as e:
+        raise HTTPException(status_code=400, detail=str(e))
+
+
+@router.delete("/{section_id}", status_code=status.HTTP_204_NO_CONTENT)
+async def delete_section(section_id: int = Path(ge=1), db: AsyncSession = Depends(get_database), user: User = Depends(auth_service.get_current_user)):
+    try:
+        section = await remove_section(section_id, db, user)
         return section
     except ValueError as e:
         raise HTTPException(status_code=400, detail=str(e))
