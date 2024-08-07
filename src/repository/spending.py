@@ -74,3 +74,18 @@ async def edit_spending_by_id(body: SpendingUpdateSchema, idx: int, db: AsyncSes
         return spending
     except ValueError as e:
         raise ValueError(e)
+
+
+async def delete_spending_by_id(idx: int, db: AsyncSession = Depends(get_database)):
+    try:
+        stmt = select(Spendings).filter_by(id=idx)
+        result = await db.execute(stmt)
+        spending = result.scalar_one_or_none()
+        if spending:
+            await db.delete(spending)
+            await db.commit()
+            return spending
+        else:
+            raise ValueError("Spending not found")
+    except ValueError as e:
+        raise ValueError(e)
