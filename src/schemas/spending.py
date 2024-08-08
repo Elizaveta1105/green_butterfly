@@ -9,7 +9,7 @@ class SpendingSchema(BaseModel):
     name: str
     description: Optional[str] = None
     date: Optional[datetime.date] = None
-    currency: Optional[str] = "USD"
+    currency: Optional[str] = None
     sum: float
     sum_currency: Optional[float] = 0
 
