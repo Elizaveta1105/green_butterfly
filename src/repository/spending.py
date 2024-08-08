@@ -25,7 +25,8 @@ async def add_spending(body: SpendingSchema, db: AsyncSession = Depends(get_data
         if spending.sum:
             date_value = spending.date if body.date else datetime.now().date()
             currency_val = spending.currency if body.currency else "USD"
-            spending.currency = currency_val
+            if not spending.currency:
+                spending.currency = currency_val
             spending.date = date_value
 
             spending.sum_currency = await currency_service.set_currency_sum(spending.sum, date_value, currency_val)
