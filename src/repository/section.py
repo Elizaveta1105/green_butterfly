@@ -6,6 +6,8 @@ from sqlalchemy.ext.asyncio import AsyncSession
 
 from src.database.db import get_database
 from src.database.models import Section, User
+from src.error_messages.messages import ERROR_SECTION_NOT_FOUND
+from src.exceptions.custom_exceptions import NotFoundException
 from src.schemas.section import SectionSchema
 from src.services.auth import auth_service
 
@@ -32,15 +34,15 @@ async def get_section_by_id(section_id: int, db: AsyncSession) -> Section:
     result = await db.execute(select(Section).where(Section.id == section_id))
     section = result.scalar_one_or_none()
     if section is None:
-        raise ValueError("Section not found")
+        raise NotFoundException(ERROR_SECTION_NOT_FOUND)
     return section
 
 
 async def get_sections(db: AsyncSession, user: User):
     result = await db.execute(select(Section).filter_by(user=user))
     sections = result.scalars().all()
-    if sections is None:
-        raise ValueError("Section not found")
+    if not sections:
+        return []
     return sections
 
 
@@ -49,7 +51,7 @@ async def edit_section_body(body: SectionSchema, section_id: int, db: AsyncSessi
     result = await db.execute(stmt)
     section = result.scalar_one_or_none()
     if section is None:
-        raise ValueError("Section not found")
+        raise NotFoundException(ERROR_SECTION_NOT_FOUND)
     for key, value in body.dict().items():
         if value:
             setattr(section, key, value)
@@ -63,7 +65,9 @@ async def remove_section(section_id: int, db: AsyncSession, user: User):
         stmt = select(Section).filter_by(id=section_id, user_id=user.id)
         result = await db.execute(stmt)
         section = result.scalar_one_or_none()
-        if section:
+        if section is None:
+            raise NotFoundException(ERROR_SECTION_NOT_FOUND)
+        elif section:
             await db.delete(section)
             await db.commit()
             return section
