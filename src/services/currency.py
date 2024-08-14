@@ -34,7 +34,7 @@ class Currency:
     async def set_currency_sum(self, spent_sum: float, date_value: datetime.date, currency_val: str) -> float:
         try:
             sum_in_currency = await self.convert_currency(spent_sum, date_value.strftime("%d.%m.%Y"),
-                                                       currency_val)
+                                                          currency_val)
             return sum_in_currency
         except CurrencyRateException as e:
             raise HTTPException(status_code=400, detail=ERROR_CURRENCY_RATE.format(details=str(e)))

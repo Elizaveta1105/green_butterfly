@@ -84,8 +84,11 @@ async def edit_spending_by_id(body: SpendingUpdateSchema, idx: int, db: AsyncSes
 
         for key, value in body.dict().items():
             if value:
-                print(key, value)
                 setattr(spending, key, value)
+                if key == "sum":
+                    spending.sum = value
+                    spending.sum_currency = await currency_service.set_currency_sum(spending.sum, spending.date,
+                                                                                    spending.currency)
         await db.commit()
         await db.refresh(spending)
         return spending
@@ -98,11 +101,21 @@ async def delete_spending_by_id(idx: int, db: AsyncSession = Depends(get_databas
         stmt = select(Spendings).filter_by(id=idx)
         result = await db.execute(stmt)
         spending = result.scalar_one_or_none()
+        section = await get_section_by_id(spending.section_id, db)
+
+        if section is None:
+            raise NotFoundException(ERROR_SECTION_NOT_FOUND)
+
         if spending is None:
             raise NotFoundException(ERROR_SPENDING_NOT_FOUND)
-        elif spending:
-            await db.delete(spending)
-            await db.commit()
-            return spending
+
+        s_sum = spending.sum
+        s_currency = spending.sum_currency
+        section.sum -= s_sum
+        section.sum_currency -= s_currency
+
+        await db.delete(spending)
+        await db.commit()
+        return spending
     except ValueError as e:
         raise ERROR_INVALID_INPUT.format(details=str(e))
