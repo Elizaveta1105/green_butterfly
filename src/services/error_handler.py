@@ -3,7 +3,8 @@ from functools import wraps
 from fastapi import HTTPException
 
 from src.error_messages.messages import ERROR_INVALID_INPUT, ERROR_TYPE_ERROR, ERROR_KEY_ERROR, ERROR_ATTRIBUTE_ERROR, \
-    ERROR_SYNTAX_ERROR
+    ERROR_SYNTAX_ERROR, ERROR_SPENDING_NOT_FOUND
+from src.exceptions.custom_exceptions import NotFoundException
 
 
 def handle_errors(func):
@@ -23,5 +24,7 @@ def handle_errors(func):
             raise HTTPException(status_code=400, detail=ERROR_ATTRIBUTE_ERROR.format(details=str(e)))
         except SyntaxError as e:
             raise HTTPException(status_code=400, detail=ERROR_SYNTAX_ERROR.format(details=str(e)))
+        except NotFoundException as e:
+            raise HTTPException(status_code=404, detail=ERROR_SPENDING_NOT_FOUND.format(details=str(e)))
 
     return wrapper

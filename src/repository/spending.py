@@ -7,7 +7,8 @@ from sqlalchemy.ext.asyncio import AsyncSession
 
 from src.database.db import get_database
 from src.database.models import Spendings
-from src.error_messages.messages import ERROR_SPENDING_NOT_FOUND, ERROR_TYPE_ERROR, ERROR_INVALID_INPUT
+from src.error_messages.messages import ERROR_SPENDING_NOT_FOUND, ERROR_TYPE_ERROR, ERROR_INVALID_INPUT, \
+    ERROR_SECTION_NOT_FOUND
 from src.exceptions.custom_exceptions import NotFoundException
 from src.schemas.spending import SpendingSchema, SpendingUpdateSchema
 from src.services.currency import currency_service
@@ -18,7 +19,7 @@ async def add_spending(body: SpendingSchema, db: AsyncSession = Depends(get_data
     try:
         section = await get_section_by_id(body.section_id, db)
         if not section:
-            raise NotFoundException(ERROR_SPENDING_NOT_FOUND)
+            raise NotFoundException(ERROR_SECTION_NOT_FOUND)
 
         spending = Spendings(**body.dict())
 
@@ -51,6 +52,8 @@ async def get_spending_by_id(idx: int, db: AsyncSession = Depends(get_database))
         stmt = select(Spendings).filter_by(id=idx)
         result = await db.execute(stmt)
         spending = result.scalar_one_or_none()
+        if spending is None:
+            raise NotFoundException(ERROR_SPENDING_NOT_FOUND)
         return spending
     except ValueError as e:
         raise ERROR_INVALID_INPUT.format(details=str(e))
@@ -75,8 +78,10 @@ async def edit_spending_by_id(body: SpendingUpdateSchema, idx: int, db: AsyncSes
         stmt = select(Spendings).filter_by(id=idx)
         result = await db.execute(stmt)
         spending = result.scalar_one_or_none()
-        if not spending:
+
+        if spending is None:
             raise NotFoundException(ERROR_SPENDING_NOT_FOUND)
+
         for key, value in body.dict().items():
             if value:
                 print(key, value)
@@ -93,11 +98,11 @@ async def delete_spending_by_id(idx: int, db: AsyncSession = Depends(get_databas
         stmt = select(Spendings).filter_by(id=idx)
         result = await db.execute(stmt)
         spending = result.scalar_one_or_none()
-        if spending:
+        if spending is None:
+            raise NotFoundException(ERROR_SPENDING_NOT_FOUND)
+        elif spending:
             await db.delete(spending)
             await db.commit()
             return spending
-        else:
-            raise NotFoundException(ERROR_SPENDING_NOT_FOUND)
     except ValueError as e:
         raise ERROR_INVALID_INPUT.format(details=str(e))

@@ -10,6 +10,10 @@ class SectionSchema(BaseModel):
     sum_currency: Optional[float] = 0
 
 
+class SectionUpdateSchema(SectionSchema):
+    name: Optional[str] = None
+
+
 class SectionResponseSchema(SectionSchema):
     id: int = 1
 
