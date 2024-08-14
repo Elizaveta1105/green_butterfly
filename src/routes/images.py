@@ -11,6 +11,7 @@ from src.database.models import User
 from src.repository.images import add_image, get_images_by_sectionid
 from src.schemas.images import ImageResponseSchema, ImageSchema
 from src.services.auth import auth_service
+from src.services.error_handler import handle_errors
 
 router = APIRouter(prefix="/image", tags=["images"])
 
@@ -25,6 +26,7 @@ cloudinary.config(
 @router.post(
     "/", response_model=ImageResponseSchema, status_code=status.HTTP_201_CREATED
 )
+@handle_errors
 async def post_image(
         title: str = Form(...),
         description: str = Form(...),
@@ -46,13 +48,10 @@ async def post_image(
 @router.get(
     "/{section_id}", response_model=List[ImageResponseSchema], status_code=status.HTTP_200_OK
 )
+@handle_errors
 async def get_images_by_section(
         section_id: int = Path(ge=1),
         db: AsyncSession = Depends(get_database),
         user: User = Depends(auth_service.get_current_user)
 ):
-    try:
-        images = await get_images_by_sectionid(section_id, db)
-        return images
-    except (ValueError, TypeError, AttributeError, SyntaxError, KeyError) as e:
-        raise HTTPException(status_code=400, detail=str(e))
+    return await get_images_by_sectionid(section_id, db)
