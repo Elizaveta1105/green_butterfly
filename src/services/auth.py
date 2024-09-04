@@ -11,7 +11,7 @@ from src.config.config import config
 from passlib.context import CryptContext
 
 from src.database.db import get_database
-from src.repository.users import get_user_by_email
+from src.repository import users
 
 
 class Auth:
@@ -35,11 +35,11 @@ class Auth:
     async def create_access_token(self, data: dict, expires_delta: Optional[float] = None):
         copied = data.copy()
         if expires_delta:
-            expiration = datetime.now() + timedelta(seconds=expires_delta)
+            expiration = datetime.utcnow() + timedelta(seconds=expires_delta)
         else:
-            expiration = datetime.now() + timedelta(minutes=15)
+            expiration = datetime.utcnow() + timedelta(minutes=15)
 
-        copied.update({'iat': datetime.now(), 'exp': expiration, "scope": "access_token"})
+        copied.update({'iat': datetime.utcnow(), 'exp': expiration, "scope": "access_token"})
         encoded_access_token = jwt.encode(copied, self.SECRET_KEY, algorithm=self.ALGORITHM)
 
         return encoded_access_token
@@ -47,11 +47,11 @@ class Auth:
     async def create_refresh_token(self, data: dict, expires_delta: Optional[float] = None):
         copied = data.copy()
         if expires_delta:
-            expiration = datetime.now() + timedelta(seconds=expires_delta)
+            expiration = datetime.utcnow() + timedelta(seconds=expires_delta)
         else:
-            expiration = datetime.now() + timedelta(days=7)
+            expiration = datetime.utcnow() + timedelta(days=7)
 
-        copied.update({'iat': datetime.now(), 'exp': expiration, "scope": "access_token"})
+        copied.update({'iat': datetime.utcnow(), 'exp': expiration, "scope": "access_token"})
         encoded_refresh_token = jwt.encode(copied, self.SECRET_KEY, algorithm=self.ALGORITHM)
 
         return encoded_refresh_token
@@ -90,10 +90,11 @@ class Auth:
                     raise credentials_exception
             else:
                 raise credentials_exception
-        except JWTError:
+        except JWTError as e:
+            print(e)
             raise credentials_exception
 
-        user = await get_user_by_email(email, db)
+        user = await users.get_user_by_email(email, db)
         if user is None:
             raise credentials_exception
         return user

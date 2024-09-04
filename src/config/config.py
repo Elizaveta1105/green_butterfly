@@ -3,8 +3,9 @@ from pydantic_settings import BaseSettings
 
 
 class Settings(BaseSettings):
+    #openssl rand -hex 32
     DB_URL: str = "postgresql+psycopg2://postgres:password@localhost:5432/postgres"
-    SECRET_KEY_JWT: str = '06fc6ca97a6eb821c4790eb7af56e2a24fe9fa95bbea901dd08a8ade0f832e28'
+    SECRET_KEY_JWT: str = '6493e95c7f0a9f34c051bd37622a16bde3a61910f60926abe975c27b75e37c64'
     ALGORITHM: str = 'HS256'
     MAIL_USERNAME: EmailStr = 'username@test.com'
     MAIL_PASSWORD: str = 'password'

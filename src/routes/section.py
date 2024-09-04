@@ -1,7 +1,7 @@
 from pathlib import Path
 from typing import List
 
-from fastapi import APIRouter, status, Depends, HTTPException
+from fastapi import APIRouter, status, Depends
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from src.database.db import get_database
