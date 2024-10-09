@@ -13,7 +13,7 @@ async def get_user_by_email(email: str, db: AsyncSession = Depends(get_database)
     result = await db.execute(stmt)
     user = result.scalar_one_or_none()
     if user is None:
-        raise ValueError("Verification error")
+        return None
 
     return user
 
