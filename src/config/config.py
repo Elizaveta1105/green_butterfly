@@ -12,9 +12,9 @@ class Settings(BaseSettings):
     MAIL_FROM: str = 'from@test.com'
     MAIL_PORT: int = 435
     MAIL_SERVER: str = 'smtp.meta.com'
-    REDIS_DOMAIN: str = 'localhost'
+    REDIS_DOMAIN: str = 'busy-oyster-34020.upstash.io'
     REDIS_PORT: int = 6379
-    REDIS_PASSWORD: str = "test"
+    REDIS_PASSWORD: str = "AYTkAAIjcDFmMzc4M2E2OWZmZGU0MGY4OWQ3MmU1YTU1OGNhNjlmNXAxMA"
     CLD_NAME: str = 'cloud_name'
     CLD_API_KEY: str = 'api_key'
     CLD_API_SECRET: str = 'api'

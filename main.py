@@ -24,7 +24,7 @@ app.add_middleware(SessionMiddleware, secret_key=secrets.token_hex(16))
 
 @app.on_event("startup")
 async def startup():
-    r = await redis.Redis(host=config.REDIS_DOMAIN, port=config.REDIS_PORT, encoding="utf-8",
+    r = await redis.Redis(host=config.REDIS_DOMAIN, port=config.REDIS_PORT, password=config.REDIS_PASSWORD, encoding="utf-8",
                           decode_responses=True)
     await FastAPILimiter.init(r)
 
