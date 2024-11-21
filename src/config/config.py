@@ -12,9 +12,9 @@ class Settings(BaseSettings):
     MAIL_FROM: str = 'from@test.com'
     MAIL_PORT: int = 435
     MAIL_SERVER: str = 'smtp.meta.com'
-    REDIS_DOMAIN: str = 'localhost'
-    REDIS_PORT: int = 6379
-    REDIS_PASSWORD: str = "test"
+    REDIS_DOMAIN: str = 'ec2-34-247-151-18.eu-west-1.compute.amazonaws.com',
+    REDIS_PORT: int = 19050
+    REDIS_PASSWORD: str = "pf0c47bc798cd112e5dca21af6bced9c0fdf287f73f603918cef6d6012be24126"
     CLD_NAME: str = 'cloud_name'
     CLD_API_KEY: str = 'api_key'
     CLD_API_SECRET: str = 'api'
