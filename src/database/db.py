@@ -1,7 +1,7 @@
 import contextlib
 from sqlalchemy.ext.asyncio import AsyncEngine, async_sessionmaker, create_async_engine
 
-SQLALCHEMY_DATABASE_URL = "postgresql+asyncpg://postgres:password@localhost:5432/postgres"
+SQLALCHEMY_DATABASE_URL = "postgresql+asyncpg://admin:NVH7QCvXOK6w@ep-ancient-bird-a23k9v91.eu-central-1.pg.koyeb.app:5432/koyebdb"
 
 
 class DatabaseSessionManager:

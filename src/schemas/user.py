@@ -1,9 +1,9 @@
-from pydantic import BaseModel, Field, EmailStr
+from pydantic import BaseModel, Field
 
 
 class UserBase(BaseModel):
     username: str = Field(..., min_length=5, max_length=25)
-    email: str = EmailStr
+    email: str = None
 
 
 class UserSchema(UserBase):

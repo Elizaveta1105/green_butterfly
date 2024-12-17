@@ -21,7 +21,6 @@ app.mount("/static", StaticFiles(directory="src/static"), name="static")
 templates = Jinja2Templates(directory="src/templates")
 app.add_middleware(SessionMiddleware, secret_key=secrets.token_hex(16))
 
-
 @app.on_event("startup")
 async def startup():
     r = await redis.Redis(host=config.REDIS_DOMAIN, port=config.REDIS_PORT, password=config.REDIS_PASSWORD, ssl=True, encoding="utf-8",
